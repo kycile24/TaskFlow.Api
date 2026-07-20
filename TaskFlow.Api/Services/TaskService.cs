@@ -1,16 +1,19 @@
 ﻿using TaskFlow.Api.DTOs;
 using TaskFlow.Api.Entities;
 using TaskFlow.Api.Interfaces;
-
+using AutoMapper;
 namespace TaskFlow.Api.Services;
 
 public class TaskService : ITaskService
 {
     private readonly ITaskRepository _taskRepository;
-
-    public TaskService(ITaskRepository taskRepository)
+    private readonly IMapper _mapper;
+    public TaskService(
+      ITaskRepository taskRepository,
+      IMapper mapper)
     {
         _taskRepository = taskRepository;
+        _mapper = mapper;
     }
 
     public async Task<List<TaskItem>> GetAllAsync()
@@ -25,14 +28,10 @@ public class TaskService : ITaskService
 
     public async Task<TaskItem> CreateAsync(CreateTaskDto dto)
     {
-        var task = new TaskItem
-        {
-            Title = dto.Title,
-            Description = dto.Description,
-            DueDate = dto.DueDate,
-            CreatedAt = DateTime.UtcNow,
-            IsCompleted = false
-        };
+        var task = _mapper.Map<TaskItem>(dto);
+
+        task.CreatedAt = DateTime.UtcNow;
+        task.IsCompleted = false;
 
         return await _taskRepository.CreateAsync(task);
     }
@@ -46,16 +45,12 @@ public class TaskService : ITaskService
             return false;
         }
 
-        task.Title = dto.Title;
-        task.Description = dto.Description;
-        task.IsCompleted = dto.IsCompleted;
-        task.DueDate = dto.DueDate;
+        _mapper.Map(dto, task);
 
         await _taskRepository.UpdateAsync(task);
 
         return true;
     }
-
     public async Task<bool> DeleteAsync(int id)
     {
         var task = await _taskRepository.GetByIdAsync(id);
