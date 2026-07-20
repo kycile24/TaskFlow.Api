@@ -5,6 +5,7 @@ namespace TaskFlow.Api.DTOs;
 public class UpdateTaskDto
 {
     [Required]
+    [MinLength(3)]
     [MaxLength(100)]
     public string Title { get; set; } = string.Empty;
 

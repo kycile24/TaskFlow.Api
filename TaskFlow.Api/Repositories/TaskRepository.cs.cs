@@ -14,9 +14,27 @@ public class TaskRepository : ITaskRepository
         _context = context;
     }
 
-    public async Task<List<TaskItem>> GetAllAsync()
+    public async Task<List<TaskItem>> GetAllAsync(
+     string? search,
+     bool? isCompleted)
     {
-        return await _context.Tasks
+        var query = _context.Tasks.AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            query = query.Where(task =>
+                task.Title.Contains(search) ||
+                (task.Description != null &&
+                 task.Description.Contains(search)));
+        }
+
+        if (isCompleted.HasValue)
+        {
+            query = query.Where(task =>
+                task.IsCompleted == isCompleted.Value);
+        }
+
+        return await query
             .OrderByDescending(task => task.CreatedAt)
             .ToListAsync();
     }

@@ -16,13 +16,16 @@ public class TasksController : ControllerBase
         _taskService = taskService;
     }
 
-    [HttpGet]
-    public async Task<ActionResult<List<TaskItem>>> GetAll()
-    {
-        var tasks = await _taskService.GetAllAsync();
+  
+   [HttpGet]
+public async Task<ActionResult<List<TaskItem>>> GetAll(
+    [FromQuery] string? search,
+    [FromQuery] bool? isCompleted)
+{
+    var tasks = await _taskService.GetAllAsync(search, isCompleted);
 
-        return Ok(tasks);
-    }
+    return Ok(tasks);
+}
 
     [HttpGet("{id:int}")]
     public async Task<ActionResult<TaskItem>> GetById(int id)

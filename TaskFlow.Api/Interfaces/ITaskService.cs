@@ -5,7 +5,9 @@ namespace TaskFlow.Api.Interfaces;
 
 public interface ITaskService
 {
-    Task<List<TaskItem>> GetAllAsync();
+    Task<List<TaskItem>> GetAllAsync(
+    string? search,
+    bool? isCompleted);
 
     Task<TaskItem?> GetByIdAsync(int id);
 

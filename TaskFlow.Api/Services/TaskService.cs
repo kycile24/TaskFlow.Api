@@ -16,9 +16,11 @@ public class TaskService : ITaskService
         _mapper = mapper;
     }
 
-    public async Task<List<TaskItem>> GetAllAsync()
+    public async Task<List<TaskItem>> GetAllAsync(
+      string? search,
+      bool? isCompleted)
     {
-        return await _taskRepository.GetAllAsync();
+        return await _taskRepository.GetAllAsync(search, isCompleted);
     }
 
     public async Task<TaskItem?> GetByIdAsync(int id)
