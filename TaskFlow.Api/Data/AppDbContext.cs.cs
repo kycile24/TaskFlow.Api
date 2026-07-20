@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using TaskFlow.Api.Entities;
 
 namespace TaskFlow.Api.Data;
 
@@ -8,4 +9,6 @@ public class AppDbContext : DbContext
         : base(options)
     {
     }
+
+    public DbSet<TaskItem> Tasks { get; set; }
 }
