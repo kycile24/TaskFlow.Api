@@ -1,8 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using TaskFlow.Api.Data;
 using TaskFlow.Api.DTOs;
 using TaskFlow.Api.Entities;
+using TaskFlow.Api.Interfaces;
 
 namespace TaskFlow.Api.Controllers;
 
@@ -10,19 +9,17 @@ namespace TaskFlow.Api.Controllers;
 [Route("api/[controller]")]
 public class TasksController : ControllerBase
 {
-    private readonly AppDbContext _context;
+    private readonly ITaskService _taskService;
 
-    public TasksController(AppDbContext context)
+    public TasksController(ITaskService taskService)
     {
-        _context = context;
+        _taskService = taskService;
     }
 
     [HttpGet]
     public async Task<ActionResult<List<TaskItem>>> GetAll()
     {
-        var tasks = await _context.Tasks
-            .OrderByDescending(task => task.CreatedAt)
-            .ToListAsync();
+        var tasks = await _taskService.GetAllAsync();
 
         return Ok(tasks);
     }
@@ -30,7 +27,7 @@ public class TasksController : ControllerBase
     [HttpGet("{id:int}")]
     public async Task<ActionResult<TaskItem>> GetById(int id)
     {
-        var task = await _context.Tasks.FindAsync(id);
+        var task = await _taskService.GetByIdAsync(id);
 
         if (task is null)
         {
@@ -43,15 +40,7 @@ public class TasksController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<TaskItem>> Create(CreateTaskDto dto)
     {
-        var task = new TaskItem
-        {
-            Title = dto.Title,
-            Description = dto.Description,
-            DueDate = dto.DueDate
-        };
-
-        _context.Tasks.Add(task);
-        await _context.SaveChangesAsync();
+        var task = await _taskService.CreateAsync(dto);
 
         return CreatedAtAction(
             nameof(GetById),
@@ -62,19 +51,12 @@ public class TasksController : ControllerBase
     [HttpPut("{id:int}")]
     public async Task<IActionResult> Update(int id, UpdateTaskDto dto)
     {
-        var task = await _context.Tasks.FindAsync(id);
+        var updated = await _taskService.UpdateAsync(id, dto);
 
-        if (task is null)
+        if (!updated)
         {
             return NotFound();
         }
-
-        task.Title = dto.Title;
-        task.Description = dto.Description;
-        task.IsCompleted = dto.IsCompleted;
-        task.DueDate = dto.DueDate;
-
-        await _context.SaveChangesAsync();
 
         return NoContent();
     }
@@ -82,15 +64,12 @@ public class TasksController : ControllerBase
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id)
     {
-        var task = await _context.Tasks.FindAsync(id);
+        var deleted = await _taskService.DeleteAsync(id);
 
-        if (task is null)
+        if (!deleted)
         {
             return NotFound();
         }
-
-        _context.Tasks.Remove(task);
-        await _context.SaveChangesAsync();
 
         return NoContent();
     }
